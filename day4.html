@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Upper Body and Core Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: single-column phone-first session sheet on a bright sky-to-blush wash. Each exercise card carries its own hue (--h strong, --t tint). Sticky progress header, fixed rest dock. */
+:root {
+  --ground-a: #dff0ff;
+  --ground-b: #fde6f4;
+  --panel: #ffffff;
+  --panel-2: #f1f4fd;
+  --line: #d3dbf3;
+  --text: #1c2250;
+  --muted: #566090;
+  --violet: #6c4cf5;
+  --coral: #f2503f;
+  --teal: #0e9e90;
+  --orange: #d9620a;
+  --pink: #e02f84;
+  --blue: #2467e8;
+  --violet-t: #ece8ff;
+  --coral-t: #ffe9e5;
+  --teal-t: #dff6f2;
+  --orange-t: #ffeedd;
+  --pink-t: #ffe6f1;
+  --blue-t: #e3edff;
+  --f-display: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { background: var(--ground-a); }
+body {
+  margin: 0;
+  padding-inline: 16px;
+  padding-block: 0 150px;
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--ground-a);
+  background-image: linear-gradient(160deg, var(--ground-a) 0%, var(--ground-b) 100%);
+  background-attachment: fixed;
+  min-height: 100%;
+}
+.wrap { max-width: 720px; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--f-display); text-transform: uppercase; letter-spacing: 0.02em; margin: 0; text-wrap: balance; }
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: inherit; }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
+
+/* header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--panel);
+  margin-inline: -16px; padding-inline: 16px;
+  padding-block: 14px 12px;
+  border-bottom: 3px solid var(--pink);
+  box-shadow: 0 6px 18px rgba(60, 70, 140, .10);
+}
+.top-in { max-width: 720px; margin-inline: auto; }
+.eyebrow { font-family: var(--f-data); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pink); font-weight: 600; }
+.top h1 { font-size: 42px; line-height: 0.95; font-weight: 800; margin-top: 4px; color: var(--pink); }
+.top-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.bar { flex: 1 1 160px; min-width: 0; height: 10px; border-radius: 5px; background: var(--panel-2); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--violet), var(--pink), var(--orange)); transition: width .25s ease; }
+.count { font-family: var(--f-data); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ghost { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 13px; color: var(--muted); }
+.ghost:hover { border-color: var(--violet); color: var(--violet); }
+
+.intro { color: var(--muted); font-size: 15px; margin: 16px 0 4px; max-width: 60ch; }
+.opt { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; margin-top: 10px; }
+.opt input { accent-color: var(--violet); width: 18px; height: 18px; }
+
+/* sections */
+section { margin-top: 24px; }
+.sec-label { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.sec-label h2 { font-size: 24px; font-weight: 800; color: var(--text); }
+.sec-label span { font-family: var(--f-data); font-size: 12px; color: var(--muted); }
+
+/* exercise hue assignment */
+.h-violet { --h: var(--violet); --t: var(--violet-t); }
+.h-coral  { --h: var(--coral);  --t: var(--coral-t); }
+.h-teal   { --h: var(--teal);   --t: var(--teal-t); }
+.h-orange { --h: var(--orange); --t: var(--orange-t); }
+.h-pink   { --h: var(--pink);   --t: var(--pink-t); }
+.h-blue   { --h: var(--blue);   --t: var(--blue-t); }
+
+.card { background: var(--t, var(--panel)); border: 2px solid var(--h, var(--line)); border-radius: 12px; padding: 16px; }
+.card + .card { margin-top: 12px; }
+.card.done { box-shadow: 0 0 0 3px var(--teal); }
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.card-head > div { min-width: 0; }
+.card h3 { font-size: 28px; font-weight: 800; line-height: 1; color: var(--h); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag { font-family: var(--f-data); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); background: var(--panel); border: 1px solid var(--h, var(--line)); border-radius: 999px; padding: 2px 8px; }
+.rx { text-align: right; flex: none; }
+.rx b { display: block; font-family: var(--f-display); font-size: 30px; line-height: 1; font-weight: 800; color: var(--text); }
+.rx span { font-family: var(--f-data); font-size: 12px; color: var(--muted); }
+
+.cue { margin: 12px 0 0; color: var(--text); font-size: 14px; max-width: 60ch; opacity: .85; }
+
+/* reference links */
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.ref {
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; font-size: 13px; font-weight: 600;
+  background: var(--panel); color: var(--h, var(--violet));
+  border: 1.5px solid var(--h, var(--violet)); border-radius: 999px; padding: 6px 12px;
+}
+.ref:hover { background: var(--h, var(--violet)); color: #fff; }
+
+.sets { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; align-items: center; }
+.dot {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 2px solid var(--h); background: var(--panel);
+  font-family: var(--f-data); font-weight: 600; font-size: 15px; color: var(--h);
+  display: grid; place-items: center;
+  transition: background .15s, color .15s, transform .1s;
+}
+.dot:hover { background: var(--panel-2); }
+.dot:active { transform: scale(0.94); }
+.dot[aria-pressed="true"] { background: var(--h); color: #fff; }
+
+.card-foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+.load { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.load input {
+  width: 96px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  color: var(--text); font-family: var(--f-data); font-size: 14px; padding: 6px 8px;
+}
+.rest-btn {
+  margin-left: auto;
+  background: var(--h); border: 1px solid var(--h); color: #fff;
+  border-radius: 6px; padding: 8px 12px; font-family: var(--f-data); font-size: 13px; font-weight: 600;
+}
+.rest-btn:hover { filter: brightness(1.1); }
+
+/* warm-up / cool-down */
+.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ck { background: var(--t); border: 2px solid var(--h); border-radius: 10px; padding: 12px 14px; }
+.ck label { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.ck input { accent-color: var(--h); width: 20px; height: 20px; margin-top: 1px; flex: none; }
+.ck strong { color: var(--h); font-weight: 700; }
+.ck small { display: block; color: var(--muted); font-size: 13px; }
+.ck input:checked + span { opacity: .55; text-decoration: line-through; }
+.ck .links { margin-top: 10px; margin-left: 32px; }
+
+/* finisher */
+.fin { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 16px; transition: border-color .2s, background .2s; }
+.fin[data-phase="work"] { border-color: var(--coral); background: var(--coral-t); }
+.fin[data-phase="easy"] { border-color: var(--teal); background: var(--teal-t); }
+.fin-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.fin h3 { font-size: 28px; font-weight: 800; line-height: 1; color: var(--coral); }
+.phase { font-family: var(--f-display); font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.fin[data-phase="work"] .phase { color: var(--coral); }
+.fin[data-phase="easy"] .phase { color: var(--teal); }
+.clock { font-family: var(--f-data); font-weight: 600; font-size: 72px; line-height: 1; margin: 14px 0 4px; font-variant-numeric: tabular-nums; color: var(--text); }
+.rounds { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.rounds i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); background: var(--panel); }
+.rounds i.now { border-color: var(--coral); background: var(--coral); }
+.rounds i.done { background: var(--teal); border-color: var(--teal); }
+.fin-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  border-radius: 8px; border: 2px solid var(--line); background: var(--panel);
+  padding: 12px 18px; font-family: var(--f-display); font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text);
+}
+.btn.primary { background: var(--coral); border-color: var(--coral); color: #fff; }
+.btn:hover { filter: brightness(1.06); }
+
+/* rest dock */
+.dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  background: var(--panel); border-top: 3px solid var(--orange);
+  box-shadow: 0 -6px 18px rgba(60, 70, 140, .12);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.dock-in { max-width: 720px; margin-inline: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dock-time { font-family: var(--f-data); font-weight: 600; font-size: 34px; line-height: 1; min-width: 4.2ch; font-variant-numeric: tabular-nums; color: var(--muted); }
+.dock.live .dock-time { color: var(--orange); }
+.dock.over .dock-time { color: var(--teal); }
+.dock-meta { flex: 1 1 120px; min-width: 0; }
+.dock-meta b { display: block; font-family: var(--f-display); font-size: 18px; text-transform: uppercase; letter-spacing: 0.05em; }
+.dock-meta span { font-size: 13px; color: var(--muted); }
+.dock-bar { flex-basis: 100%; height: 5px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
+.dock-bar i { display: block; height: 100%; width: 0; background: var(--orange); }
+.dock-btns { display: flex; gap: 8px; }
+.dock-btns .ghost { padding: 8px 12px; }
+
+.foot { margin-top: 28px; color: var(--muted); font-size: 13px; max-width: 60ch; }
+
+.recap { display: grid; gap: 12px; }
+.rcard { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 16px; }
+.rcard h3 { font-size: 24px; font-weight: 800; color: var(--text); }
+.rlabel { font-family: var(--f-data); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 12px; }
+.rcard .tags { margin-top: 6px; }
+.rcard .tag { border-color: var(--line); background: var(--panel-2); }
+.rcard ul { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; max-width: 62ch; }
+.rcard .cue { opacity: 1; color: var(--muted); }
+
+@media (max-width: 420px) {
+  .top h1 { font-size: 34px; }
+  .clock { font-size: 60px; }
+  .card h3, .fin h3 { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="top-in">
+      <div class="eyebrow">Day 4 of 4 · Gym</div>
+      <h1>Upper Body &amp; Core</h1>
+      <div class="top-row">
+        <div class="bar" role="progressbar" aria-label="Session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="barWrap"><i id="barFill"></i></div>
+        <div class="count" id="count">0 / 0 sets</div>
+        <button class="ghost" id="reset" type="button">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <p class="intro">Push and pull variations for shoulders, chest and back, finished with hanging core work. Tap a circle when a set is done. Every exercise has a demo link and a muscle-image link that open in a new tab.</p>
+  <label class="opt"><input type="checkbox" id="auto" checked> Start rest timer when I finish a set</label>
+  <label class="opt"><input type="checkbox" id="wake" checked> Keep my screen awake during the session <span class="count" id="wakeNote"></span></label>
+
+  <section>
+    <div class="sec-label"><h2>Warm-up</h2><span>~8 min</span></div>
+    <ul class="check-list" id="warm"></ul>
+  </section>
+
+  <section>
+    <div class="sec-label"><h2>Main work</h2><span>5 exercises</span></div>
+    <div id="cards"></div>
+  </section>
+
+  <section>
+    <div class="sec-label"><h2>Cardio finisher</h2><span>8 min</span></div>
+    <div class="fin" id="fin" data-phase="idle">
+      <div class="fin-top">
+        <div>
+          <h3>Incline Treadmill Intervals</h3>
+          <div class="tags"><span class="tag">Metabolic</span><span class="tag">Glutes + calves + lungs</span><span class="tag">8 rounds</span></div>
+        </div>
+        <div class="phase" id="phase">Ready</div>
+      </div>
+      <div class="clock" id="clock">0:30</div>
+      <div class="count" id="roundLabel">Round 1 of 8 · 30 s hard / 30 s easy</div>
+      <div class="rounds" id="rounds"></div>
+      <div class="fin-btns">
+        <button class="btn primary" id="finGo" type="button">Start</button>
+        <button class="btn" id="finReset" type="button">Reset</button>
+      </div>
+      <div class="links" id="finLinks"></div>
+      <p class="cue">Set the incline to about 6 to 8 percent and run at a pace you could not hold for more than a minute, staying off the handrails with an upright posture. Easy rounds are a slow walk to recover. No treadmill? Use a stair climber or the rower.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label"><h2>Cool-down</h2><span>~5 min</span></div>
+    <ul class="check-list" id="cool"></ul>
+  </section>
+
+  <section id="recap">
+    <div class="sec-label"><h2>After your workout</h2><span class="count" id="recapSets">0 of 0 sets logged</span></div>
+    <div class="recap">
+      <div class="rcard">
+        <h3>Muscles you trained</h3>
+        <div class="rlabel">Main movers</div><div class="tags"><span class="tag">Upper chest</span><span class="tag">Front delts</span><span class="tag">Triceps</span><span class="tag">Mid-back</span><span class="tag">Lats</span><span class="tag">Abs</span></div>
+        <div class="rlabel">Supporting</div><div class="tags"><span class="tag">Biceps</span><span class="tag">Forearms and grip</span><span class="tag">Hip flexors</span><span class="tag">Obliques</span><span class="tag">Glutes and calves (treadmill)</span><span class="tag">Lungs and heart</span></div>
+      </div>
+      <div class="rcard">
+        <h3>Rest and recovery</h3>
+        <ul><li>Expect soreness in the shoulders, chest and abs for 1 to 3 days. Dull, achy soreness that fades over one to three days is normal. Sharp, pinching or joint pain is not. Stop that movement and get it checked in person.</li><li>If your shoulders or elbows feel pinchy, lower the weight and check your form before you add more load.</li><li>This closes the week. Take one to two full rest days before restarting at Day 1, and use the time for walks and mobility work.</li><li>Sleep 7 to 9 hours. Most muscle repair happens at night, and short sleep makes soreness and hunger worse.</li></ul>
+      </div>
+      <div class="rcard">
+        <h3>Eating to recover</h3>
+        <ul><li>Eat a protein-focused meal within about two hours, such as chicken, fish, eggs, tofu or beans, with carbohydrate and vegetables.</li><li>Add healthy fat (olive oil, avocado or nuts) and a piece of fruit.</li><li>Spread protein across 3 to 4 meals. Research supports roughly 1.6 to 2.2 g per kg of body weight a day for building muscle. You do not need to share your weight; a palm or two of protein at each meal gets you close.</li><li>Drink water through the day and with your meal. Pale-yellow urine is a good sign that you are hydrated.</li></ul>
+        <p class="cue">General education, not medical or dietitian advice. If you have a health condition, a food allergy, take medication, or are pregnant or nursing, check with your doctor or a registered dietitian about eating and training.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">Stop any exercise that causes sharp or pinching pain. If something keeps hurting, see a physical therapist or doctor in person. Demo and muscle links open search results on YouTube and Google Images in a new tab.</p>
+</div>
+
+
+<p style="max-width:720px;margin:24px auto 0;padding-inline:16px;font:14px/1.4 system-ui,sans-serif;color:#566090"><a href="./index.html" style="color:#6c4cf5;font-weight:600">&larr; All four days</a></p>
+<div class="dock" id="dock">
+  <div class="dock-in">
+    <div class="dock-time" id="dockTime">0:00</div>
+    <div class="dock-meta"><b id="dockTitle">Rest timer</b><span id="dockSub">Finish a set or tap a Rest button.</span></div>
+    <div class="dock-btns">
+      <button class="ghost" id="add15" type="button">+15s</button>
+      <button class="ghost" id="skip" type="button">Skip</button>
+    </div>
+    <div class="dock-bar"><i id="dockBar"></i></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* q = search phrase for the demo link, m = search phrase for the muscle imagery link */
+  var EX = [
+    { id: "incline", name: "Incline Dumbbell Press", sets: 4, reps: "8-10", rest: 90, hue: "violet", q: "incline dumbbell press form", m: "incline dumbbell press muscles worked",
+      tags: ["Upper chest", "Front delts", "Triceps", "Serratus"],
+      cue: "Bench at about 30 degrees, shoulder blades pulled back and down, lower the dumbbells to chest level with wrists over elbows, press up and slightly together." },
+    { id: "crow", name: "Seated Cable Row, Neutral Grip", sets: 4, reps: "10-12", rest: 90, hue: "coral", q: "seated cable row form", m: "seated cable row muscles worked",
+      tags: ["Mid-back", "Lats", "Rear delts", "Biceps", "Spinal erectors"],
+      cue: "Sit tall with a slight forward lean at the start, pull the handle to the lower ribs, squeeze the shoulder blades, and let them glide forward under control." },
+    { id: "ohp", name: "Seated Dumbbell Shoulder Press", sets: 3, reps: "10", rest: 75, hue: "teal", q: "seated dumbbell shoulder press form", m: "shoulder press muscles worked",
+      tags: ["Shoulders", "Triceps", "Upper traps", "Core"],
+      cue: "Back supported, ribs down, press the dumbbells up in a slight arc until the arms are long, and lower to ear level. Do not flare the ribs or arch the back." },
+    { id: "sapd", name: "Half-Kneeling Single-Arm Cable Pulldown", sets: 3, reps: "12 / arm", rest: 60, hue: "orange", q: "half kneeling single arm cable pulldown form", m: "single arm lat pulldown muscles worked",
+      tags: ["Lats", "Core", "Obliques", "Glutes"],
+      cue: "Kneel tall with the inside knee up, brace the abs, pull the elbow toward the hip, and resist twisting. Squeeze the glute of the down leg to stay stacked." },
+    { id: "hang", name: "Hanging Knee Raise (Captain's Chair Option)", sets: 3, reps: "10-12", rest: 60, hue: "pink", q: "hanging knee raise form", m: "hanging knee raise muscles worked",
+      tags: ["Lower abs", "Hip flexors", "Obliques", "Grip", "Lats"],
+      cue: "Hang with the shoulders active, curl the pelvis up to bring the knees to the chest instead of swinging, and lower slowly. A captain's chair takes the grip out of it." }
+  ];
+  var WARM = [
+    { n: "Arm circles", d: "10 forward and 10 backward, loosens the shoulders", hue: "violet", q: "arm circles warm up form", m: "arm circles muscles worked" },
+    { n: "Cat-cow", d: "10 slow reps, mobilizes the whole spine", hue: "coral", q: "cat cow stretch how to", m: "cat cow stretch muscles worked" },
+    { n: "Wall slides", d: "2 x 10 with back and forearms on a wall, wakes up the lower traps and serratus", hue: "teal", q: "wall slides wall angels form", m: "wall slides muscles worked" },
+    { n: "Scapular push-ups", d: "2 x 10, arms straight in a plank, let the shoulder blades squeeze and spread", hue: "orange", q: "scapular push ups form", m: "scapular push up muscles worked" },
+    { n: "Bird dog", d: "2 x 6 per side, steadies the core and back before the hanging work", hue: "pink", q: "bird dog exercise form", m: "bird dog exercise muscles worked" }
+  ];
+  var COOL = [
+    { n: "Doorway pec stretch", d: "30 s each side, opens the chest after pressing", hue: "blue", q: "doorway pec stretch how to", m: "doorway chest stretch muscles" },
+    { n: "Cross-body shoulder stretch", d: "30 s each side, eases the rear shoulder", hue: "violet", q: "cross body shoulder stretch form", m: "cross body shoulder stretch muscles" },
+    { n: "Child's pose with side reach", d: "30 s each side, stretches the lats and side of the torso", hue: "coral", q: "childs pose side reach lat stretch", m: "childs pose muscles stretched" },
+    { n: "Low cobra", d: "20 s, hips on the floor, elbows bent, gently opens the front of the abs", hue: "teal", q: "low cobra pose how to", m: "cobra pose muscles stretched" }
+  ];
+  var FIN = { q: "incline treadmill sprint intervals form", m: "treadmill running muscles worked" };
+
+  function yt(q) { return "https://www.youtube.com/results?search_query=" + encodeURIComponent(q); }
+  function gi(q) { return "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(q); }
+  function links(q, m) {
+    return '<a class="ref" href="' + yt(q) + '" target="_blank" rel="noopener noreferrer">Watch demo ↗</a>' +
+           '<a class="ref" href="' + gi(m) + '" target="_blank" rel="noopener noreferrer">See muscles ↗</a>';
+  }
+
+  var KEY = "upperCoreDay4.v1";
+  var state = { sets: {}, load: {}, warm: {}, cool: {}, auto: true, wake: true };
+
+  function load() { try { var s = localStorage.getItem(KEY); if (s) state = Object.assign(state, JSON.parse(s)); } catch (e) {} }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function $(id) { return document.getElementById(id); }
+  function fmt(s) { s = Math.max(0, s); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+
+  /* audio beep (only after a user gesture) */
+  var ac = null;
+  function beep(freq, ms) {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.value = freq; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0.15, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + ms / 1000);
+      o.start(); o.stop(ac.currentTime + ms / 1000);
+    } catch (e) {}
+  }
+
+  /* rest dock */
+  var rest = { left: 0, total: 0, t: null, label: "" };
+  function paintDock() {
+    $("dockTime").textContent = fmt(rest.left);
+    $("dockBar").style.width = rest.total ? (100 * (1 - rest.left / rest.total)) + "%" : "0";
+  }
+  function startRest(sec, label) {
+    clearInterval(rest.t);
+    rest.left = sec; rest.total = sec; rest.label = label;
+    $("dock").className = "dock live";
+    $("dockTitle").textContent = "Resting";
+    $("dockSub").textContent = label;
+    paintDock();
+    rest.t = setInterval(function () {
+      rest.left -= 1; paintDock();
+      if (rest.left <= 0) {
+        clearInterval(rest.t);
+        $("dock").className = "dock over";
+        $("dockTitle").textContent = "Go";
+        $("dockSub").textContent = "Next set is up.";
+        beep(880, 350);
+      } else if (rest.left <= 3) { beep(520, 80); }
+    }, 1000);
+  }
+  function stopRest() {
+    clearInterval(rest.t); rest.left = 0; rest.total = 0;
+    $("dock").className = "dock";
+    $("dockTitle").textContent = "Rest timer";
+    $("dockSub").textContent = "Finish a set or tap a Rest button.";
+    paintDock();
+  }
+  $("skip").onclick = stopRest;
+  $("add15").onclick = function () {
+    if (rest.left > 0) { rest.left += 15; rest.total += 15; paintDock(); }
+    else { startRest(15, "Extra time"); }
+  };
+
+  /* cards */
+  function render() {
+    var host = $("cards"); host.innerHTML = "";
+    EX.forEach(function (ex) {
+      var done = 0, arr = state.sets[ex.id] || [];
+      for (var i = 0; i < ex.sets; i++) if (arr[i]) done++;
+      var card = document.createElement("article");
+      card.className = "card h-" + ex.hue + (done === ex.sets ? " done" : "");
+      var dots = "";
+      for (var j = 0; j < ex.sets; j++) {
+        dots += '<button type="button" class="dot" data-ex="' + ex.id + '" data-i="' + j + '" aria-pressed="' + (!!arr[j]) + '" aria-label="' + ex.name + ' set ' + (j + 1) + '">' + (j + 1) + "</button>";
+      }
+      card.innerHTML =
+        '<div class="card-head"><div><h3>' + ex.name + '</h3><div class="tags">' + ex.tags.map(function (t) { return '<span class="tag">' + t + "</span>"; }).join("") + '</div></div>' +
+        '<div class="rx"><b>' + ex.sets + " × " + ex.reps + "</b><span>rest " + ex.rest + " s</span></div></div>" +
+        '<p class="cue">' + ex.cue + "</p>" +
+        '<div class="links">' + links(ex.q, ex.m) + "</div>" +
+        '<div class="sets">' + dots + "</div>" +
+        '<div class="card-foot"><label class="load">Load <input type="text" inputmode="decimal" id="ld-' + ex.id + '" placeholder="e.g. 25 lb" value="' + (state.load[ex.id] || "").replace(/"/g, "") + '"></label>' +
+        '<button type="button" class="rest-btn" data-rest="' + ex.id + '">Rest ' + fmt(ex.rest) + "</button></div>";
+      host.appendChild(card);
+    });
+    host.querySelectorAll(".dot").forEach(function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute("data-ex"), i = +b.getAttribute("data-i");
+        var a = state.sets[id] || []; a[i] = !a[i]; state.sets[id] = a; save();
+        var ex = EX.filter(function (e) { return e.id === id; })[0];
+        if (a[i] && state.auto) startRest(ex.rest, ex.name + " · set " + (i + 1) + " done");
+        render(); progress();
+      };
+    });
+    host.querySelectorAll(".rest-btn").forEach(function (b) {
+      b.onclick = function () {
+        var ex = EX.filter(function (e) { return e.id === b.getAttribute("data-rest"); })[0];
+        startRest(ex.rest, ex.name);
+      };
+    });
+    EX.forEach(function (ex) {
+      var inp = $("ld-" + ex.id);
+      if (inp) inp.oninput = function () { state.load[ex.id] = inp.value; save(); };
+    });
+  }
+
+  function progress() {
+    var total = 0, done = 0;
+    EX.forEach(function (ex) { total += ex.sets; (state.sets[ex.id] || []).forEach(function (v, i) { if (v && i < ex.sets) done++; }); });
+    var pct = total ? Math.round(100 * done / total) : 0;
+    $("barFill").style.width = pct + "%";
+    $("barWrap").setAttribute("aria-valuenow", pct);
+    $("count").textContent = done + " / " + total + " sets";
+    var rs = $("recapSets"); if (rs) rs.textContent = done + " of " + total + " sets logged";
+  }
+
+  function checklist(host, items, bucket) {
+    var ul = $(host); ul.innerHTML = "";
+    items.forEach(function (it, i) {
+      var li = document.createElement("li");
+      li.className = "ck h-" + it.hue;
+      li.innerHTML = '<label><input type="checkbox"' + (state[bucket][i] ? " checked" : "") + '><span><strong>' + it.n + "</strong><small>" + it.d + "</small></span></label>" +
+        '<div class="links">' + links(it.q, it.m) + "</div>";
+      li.querySelector("input").onchange = function (e) { state[bucket][i] = e.target.checked; save(); };
+      ul.appendChild(li);
+    });
+  }
+
+  /* finisher interval timer */
+  var R = 8, WORK = 30, EASY = 30;
+  var fin = { round: 1, phase: "idle", left: WORK, t: null, running: false };
+  function paintFin() {
+    $("fin").setAttribute("data-phase", fin.phase === "work" ? "work" : fin.phase === "easy" ? "easy" : "idle");
+    $("phase").textContent = fin.phase === "work" ? "Hard" : fin.phase === "easy" ? "Easy" : fin.phase === "done" ? "Finished" : "Ready";
+    $("clock").textContent = fmt(fin.left);
+    $("roundLabel").textContent = fin.phase === "done" ? "All 8 rounds complete" : "Round " + fin.round + " of " + R + " · " + WORK + " s hard / " + EASY + " s easy";
+    var h = "";
+    for (var i = 1; i <= R; i++) {
+      var c = i < fin.round || fin.phase === "done" ? "done" : (i === fin.round && fin.phase !== "idle" ? "now" : "");
+      h += '<i class="' + c + '"></i>';
+    }
+    $("rounds").innerHTML = h;
+    $("finGo").textContent = fin.running ? "Pause" : (fin.phase === "idle" ? "Start" : fin.phase === "done" ? "Again" : "Resume");
+  }
+  function finTick() {
+    fin.left -= 1;
+    if (fin.left <= 0) {
+      if (fin.phase === "work") { fin.phase = "easy"; fin.left = EASY; beep(520, 250); }
+      else if (fin.round >= R) { fin.phase = "done"; fin.left = 0; fin.running = false; clearInterval(fin.t); beep(990, 600); }
+      else { fin.round += 1; fin.phase = "work"; fin.left = WORK; beep(880, 300); }
+    } else if (fin.left <= 3) { beep(660, 70); }
+    paintFin();
+  }
+  function finReset() { clearInterval(fin.t); fin = { round: 1, phase: "idle", left: WORK, t: null, running: false }; paintFin(); }
+  $("finGo").onclick = function () {
+    if (fin.phase === "done") finReset();
+    if (fin.running) { fin.running = false; clearInterval(fin.t); }
+    else {
+      stopRest();
+      if (fin.phase === "idle") { fin.phase = "work"; fin.left = WORK; beep(880, 300); }
+      fin.running = true; fin.t = setInterval(finTick, 1000);
+    }
+    paintFin();
+  };
+  $("finReset").onclick = finReset;
+
+  $("auto").onchange = function (e) { state.auto = e.target.checked; save(); };
+  $("reset").onclick = function () {
+    state = { sets: {}, load: state.load, warm: {}, cool: {}, auto: state.auto, wake: state.wake };
+    save(); stopRest(); finReset(); init();
+  };
+
+  function init() {
+    $("auto").checked = !!state.auto;
+    $("wake").checked = state.wake !== false;
+    $("finLinks").innerHTML = links(FIN.q, FIN.m);
+    render(); progress();
+    checklist("warm", WARM, "warm");
+    checklist("cool", COOL, "cool");
+    paintFin(); paintDock();
+  }
+  /* keep the screen awake while the page is visible */
+  var wl = null;
+  function wakeNote(t) { var n = $("wakeNote"); if (n) n.textContent = t; }
+  function wakeOn() {
+    if (state.wake === false) return;
+    try {
+      if (!navigator.wakeLock) { wakeNote("(not supported here)"); return; }
+      if (document.visibilityState !== "visible" || wl) return;
+      navigator.wakeLock.request("screen").then(function (l) {
+        wl = l; wakeNote("(on)");
+        l.addEventListener("release", function () { wl = null; });
+      }).catch(function () { wakeNote("(not allowed here, keep your screen awake yourself)"); });
+    } catch (e) { wakeNote("(not available)"); }
+  }
+  function wakeOff() { try { if (wl) { wl.release(); wl = null; } } catch (e) {} wakeNote("(off)"); }
+  $("wake").onchange = function (e) { state.wake = e.target.checked; save(); if (state.wake) wakeOn(); else wakeOff(); };
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") wakeOn(); });
+  document.addEventListener("pointerdown", function () { wakeOn(); }, { passive: true });
+
+  load(); init(); wakeOn();
+})();
+</script>
+
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Four-Day Gym Tracker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;600&display=swap">
+<style>
+:root { --text:#1c2250; --muted:#566090; --violet:#6c4cf5; --coral:#f2503f; --teal:#0e9e90; --pink:#e02f84;
+  --violet-t:#ece8ff; --coral-t:#ffe9e5; --teal-t:#dff6f2; --pink-t:#ffe6f1; color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin:0; padding:24px 16px 48px; font:16px/1.45 "Barlow", system-ui, sans-serif; color:var(--text);
+  background:#dff0ff linear-gradient(160deg,#dff0ff 0%,#fde6f4 100%); min-height:100vh; }
+main { max-width:720px; margin-inline:auto; }
+h1 { font:800 46px/0.95 "Barlow Condensed","Arial Narrow",Impact,sans-serif; text-transform:uppercase; color:var(--violet); margin:0; }
+p.lead { color:var(--muted); max-width:56ch; }
+.days { display:grid; gap:12px; margin-top:20px; }
+a.day { display:block; text-decoration:none; color:inherit; border:2px solid var(--c); background:var(--t); border-radius:12px; padding:16px; }
+a.day:hover { background:#fff; }
+a.day b { display:block; font:800 28px/1 "Barlow Condensed","Arial Narrow",Impact,sans-serif; text-transform:uppercase; color:var(--c); }
+a.day span { display:block; margin-top:6px; color:var(--muted); font-size:15px; }
+.d1{--c:var(--violet);--t:var(--violet-t)} .d2{--c:var(--coral);--t:var(--coral-t)} .d3{--c:var(--teal);--t:var(--teal-t)} .d4{--c:var(--pink);--t:var(--pink-t)}
+small { display:block; margin-top:24px; color:var(--muted); max-width:60ch; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Four-Day Gym Tracker</h1>
+  <p class="lead">A lean, athletic training split with set tracking, rest timers, interval finishers, demo links and recovery notes. Pick today's session.</p>
+  <div class="days">
+    <a class="day d1" href="./day1.html"><b>Day 1 · Pull &amp; Posture</b><span>Gym. Back width and thickness, rear shoulders, a hinge, rower finisher.</span></a>
+    <a class="day d2" href="./day2.html"><b>Day 2 · Lower Body Power</b><span>Gym. Squat, hip thrust, split squat, pull-through, step-up, bike sprints.</span></a>
+    <a class="day d3" href="./day3.html"><b>Day 3 · Calisthenics &amp; Cardio</b><span>Home, no equipment. Push-ups, lunges, agility, jump rope intervals.</span></a>
+    <a class="day d4" href="./day4.html"><b>Day 4 · Upper Body &amp; Core</b><span>Gym. Push and pull variations, hanging abs, treadmill intervals.</span></a>
+  </div>
+  <small>General fitness information, not medical advice. Stop any exercise that causes sharp pain and see a doctor or physical therapist if it persists. Your logged sets are saved only in your own browser.</small>
+</main>
+</body>
+</html>
